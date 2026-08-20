@@ -1,0 +1,6 @@
+{
+  "name": "Kỹ Sư Phía Chủ Nhà - Content AI Agent",
+  "description": "Content AI Agent & Trợ lý Kỹ Sư Phía Chủ Nhà của Anh Vũ Văn Quyền (15 năm MEP) - Tự động tạo bài viết Facebook chuyên sâu, kịch bản video TikTok 3 cột, câu đố vạch lỗi báo giá và công cụ Audit báo giá cải tạo chung cư Hà Nội.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
