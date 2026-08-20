@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { SAMPLE_QUOTATIONS } from "../data/presets";
 import { AuditReportData, GeneratedContentItem } from "../types";
+import { safeAuditQuotation } from "../utils/safeApiClient";
 import {
   FileSearch,
   AlertTriangle,
@@ -47,17 +48,12 @@ export const QuotationAuditTool: React.FC<QuotationAuditToolProps> = ({
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const response = await fetch("/api/quotation/audit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          quotationText,
-          apartmentType,
-          budgetExpected,
-        }),
+      const data = await safeAuditQuotation({
+        quotationText,
+        apartmentType,
+        budgetExpected,
       });
 
-      const data = await response.json();
       if (data.success && data.auditReport) {
         setAuditReport(data.auditReport);
         try {
@@ -66,7 +62,7 @@ export const QuotationAuditTool: React.FC<QuotationAuditToolProps> = ({
           // ignore
         }
       } else {
-        setErrorMessage(data.error || "Không thể thực hiện audit báo giá. Vui lòng thử lại.");
+        setErrorMessage("Không thể thực hiện audit báo giá. Vui lòng thử lại.");
       }
     } catch (err: any) {
       console.error("Audit error:", err);

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, Send, RefreshCw, HardHat, Sparkles, User, Bot, Trash2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { safeSendChat } from "../utils/safeApiClient";
 
 interface Message {
   role: "user" | "assistant";
@@ -44,27 +45,22 @@ export const EngineerChatModal: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: text,
-        }),
+      const data = await safeSendChat({
+        message: text,
       });
 
-      const data = await response.json();
       if (data.success && data.reply) {
         setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
       } else {
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: `⚠️ Lỗi: ${data.error || "Không thể phản hồi."}` },
+          { role: "assistant", content: "⚠️ Không thể phản hồi lúc này. Vui lòng thử lại." },
         ]);
       }
     } catch (err: any) {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `⚠️ Lỗi kết nối: ${err.message}` },
+        { role: "assistant", content: `⚠️ Lỗi kết nối: ${err?.message || "Vui lòng thử lại"}` },
       ]);
     } finally {
       setIsLoading(false);

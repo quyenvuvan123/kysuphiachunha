@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { PILLARS_CONFIG, PRESET_TOPICS } from "../data/presets";
 import { ContentPillar, ContentFormat, GeneratedContentItem } from "../types";
+import { safeGenerateContent } from "../utils/safeApiClient";
 import {
   Sparkles,
   Copy,
@@ -76,27 +77,22 @@ export const ContentGenerator: React.FC<ContentGeneratorProps> = ({
     setIsSaved(false);
 
     try {
-      const response = await fetch("/api/content/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pillar: PILLARS_CONFIG.find((p) => p.id === selectedPillar)?.name || selectedPillar,
-          format:
-            format === "facebook_deep_dive"
-              ? "Facebook Cá Nhân - Bài Viết Chuyên Sâu"
-              : format === "facebook_quiz_puzzle"
-              ? "Facebook Cá Nhân - Bài Toán Đố Tương Tác Vạch Lỗi Báo Giá (Kèm A/B/C/D & Đáp Án)"
-              : format === "tiktok_shorts_3col"
-              ? "TikTok / YouTube Shorts (30-60s) - Bảng Kịch Bản 3 Cột: [Thời gian (giây)] - [Hình ảnh/Text trên màn hình/Hành động] - [Lời thoại thực tế (Anh Quyền nói)]. Có Hook 3s đầu cực mạnh."
-              : "Bài Viết Bóc Tách Báo Giá & Cảnh Báo Phát Sinh 20-40%",
-          topic: topic + (toneOverride ? ` (Yêu cầu phong cách: ${toneOverride})` : ` (${customToneBonus})`),
-          specificDetails,
-          targetAudience,
-          ctaType,
-        }),
+      const data = await safeGenerateContent({
+        pillar: PILLARS_CONFIG.find((p) => p.id === selectedPillar)?.name || selectedPillar,
+        format:
+          format === "facebook_deep_dive"
+            ? "Facebook Cá Nhân - Bài Viết Chuyên Sâu"
+            : format === "facebook_quiz_puzzle"
+            ? "Facebook Cá Nhân - Bài Toán Đố Tương Tác Vạch Lỗi Báo Giá (Kèm A/B/C/D & Đáp Án)"
+            : format === "tiktok_shorts_3col"
+            ? "TikTok / YouTube Shorts (30-60s) - Bảng Kịch Bản 3 Cột: [Thời gian (giây)] - [Hình ảnh/Text trên màn hình/Hành động] - [Lời thoại thực tế (Anh Quyền nói)]. Có Hook 3s đầu cực mạnh."
+            : "Bài Viết Bóc Tách Báo Giá & Cảnh Báo Phát Sinh 20-40%",
+        topic: topic + (toneOverride ? ` (Yêu cầu phong cách: ${toneOverride})` : ` (${customToneBonus})`),
+        specificDetails,
+        targetAudience,
+        ctaType,
       });
 
-      const data = await response.json();
       if (data.success && data.content) {
         setGeneratedOutput(data.content);
         try {
@@ -105,12 +101,11 @@ export const ContentGenerator: React.FC<ContentGeneratorProps> = ({
           // ignore
         }
       } else {
-        setGeneratedOutput(
-          `⚠️ Có lỗi khi tạo nội dung: ${data.error || "Không nhận được phản hồi từ AI"}`
-        );
+        setGeneratedOutput("⚠️ Có lỗi khi tạo nội dung. Vui lòng bấm Thử tạo lại.");
       }
     } catch (err: any) {
-      setGeneratedOutput(`⚠️ Lỗi kết nối tới máy chủ: ${err.message}`);
+      console.error("Content generation error:", err);
+      setGeneratedOutput(`⚠️ Lỗi kết nối tới máy chủ: ${err?.message || "Vui lòng thử lại"}`);
     } finally {
       setIsLoading(false);
     }

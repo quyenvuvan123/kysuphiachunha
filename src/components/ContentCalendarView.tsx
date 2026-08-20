@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { CalendarDayPlan, ContentPillar } from "../types";
+import { safeGenerateCalendar } from "../utils/safeApiClient";
 import {
   Calendar,
   Sparkles,
@@ -107,16 +108,11 @@ export const ContentCalendarView: React.FC<ContentCalendarViewProps> = ({
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const response = await fetch("/api/content/generate-calendar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectFocus,
-          targetWeek: "Kế hoạch tuần thực chiến",
-        }),
+      const data = await safeGenerateCalendar({
+        projectFocus,
+        targetWeek: "Kế hoạch tuần thực chiến",
       });
 
-      const data = await response.json();
       if (data.success && Array.isArray(data.calendar) && data.calendar.length > 0) {
         setCalendarDays(data.calendar);
         try {
@@ -125,7 +121,7 @@ export const ContentCalendarView: React.FC<ContentCalendarViewProps> = ({
           // ignore
         }
       } else {
-        setErrorMessage(data.error || "Không thể tạo lịch tuần mới. Vui lòng thử lại.");
+        setErrorMessage("Không thể tạo lịch tuần mới. Vui lòng thử lại.");
       }
     } catch (err: any) {
       console.error("Error generating calendar:", err);
